@@ -23,7 +23,7 @@ class ReceiverController extends Controller
         $perPage = $request->query('per_page', 10);
         $receivers = $this->receiverService->getAll($filters, $perPage);
 
-        if ($receivers->count() == 0) {
+        if ($receivers->isEmpty()) {
             return response()->json(['message' => 'Receivers not found'], 404);
         }
 
