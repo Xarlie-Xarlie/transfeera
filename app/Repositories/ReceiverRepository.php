@@ -6,17 +6,21 @@ use App\Models\Receiver;
 
 class ReceiverRepository implements ReceiverRepositoryInterface
 {
-    public function all($filters, $perPage)
+    protected function filterDefinitions()
     {
-        $filterDefinitions = [
+        return [
             'status' => '=',
             'name' => 'like',
             'pix_key_type' => '=',
             'pix_key' => 'like'
         ];
+    }
 
-        $query = Receiver::query();
-        $query = array_reduce(array_keys($filters), function ($query, $field) use ($filters, $filterDefinitions) {
+    protected function buildFilters($filters, $query)
+    {
+        $filterDefinitions = $this->filterDefinitions();
+
+        return array_reduce(array_keys($filters), function ($query, $field) use ($filters, $filterDefinitions) {
             if (isset($filters[$field])) {
                 $condition = $filterDefinitions[$field] === 'like' ? 'like' : '=';
                 $value = $condition === 'like' ? '%' . $filters[$field] . '%' : $filters[$field];
@@ -24,6 +28,12 @@ class ReceiverRepository implements ReceiverRepositoryInterface
             }
             return $query;
         }, $query);
+    }
+
+    public function all($filters, $perPage)
+    {
+        $query = Receiver::query();
+        $query = $this->buildFilters($filters, $query);
 
         return $query->paginate($perPage);
     }
