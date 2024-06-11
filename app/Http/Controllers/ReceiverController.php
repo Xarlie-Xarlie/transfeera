@@ -3,62 +3,69 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Receiver;
 use App\Http\Resources\ReceiverResource;
 use App\Http\Requests\ReceiverRequest;
 use App\Http\Requests\UpdateReceiverRequest;
+use App\Services\ReceiverService;
 
 class ReceiverController extends Controller
 {
+    protected $receiverService;
+
+    public function __construct(ReceiverService $receiverService)
+    {
+        $this->receiverService = $receiverService;
+    }
+
     public function index(Request $request)
     {
+        $filters = $request->only(['status', 'name', 'pix_key_type', 'pix_key']);
         $perPage = $request->query('per_page', 10);
-        $name = Receiver::query();
-        $configurations = $name->paginate($perPage);
+        $receivers = $this->receiverService->getAll($filters, $perPage);
 
-        return ReceiverResource::collection($configurations);
+        if ($receivers->count() == 0) {
+            return response()->json(['message' => 'Receivers not found'], 404);
+        }
+
+        return ReceiverResource::collection($receivers);
     }
 
     public function store(ReceiverRequest $request)
     {
-        $params = $request->all();
-        $params["status"] = "rascunho";
-        $configuration = Receiver::create($params);
-        return new ReceiverResource($configuration);
-    }
-
-    public function show(Receiver $receiver)
-    {
+        $receiver = $this->receiverService->create($request->all());
         return new ReceiverResource($receiver);
     }
 
-    public function update(UpdateReceiverRequest $request, int $id)
+    public function show($id)
     {
-        $receiver = Receiver::find($id);
-        if (!isset($receiver) || is_null($receiver)) return response()->json(["message" => "Recebedor não encontrado"], 404);
-
-        $params = $request->all();
-
-        if ($receiver->status == "validado") {
-            $updateParams = isset($params["email"]) ? ["email" => $params["email"]] : [];
-        } else {
-            $updateParams = $params;
+        $receiver = $this->receiverService->find($id);
+        if (!$receiver) {
+            return response()->json(['message' => 'Receiver not found'], 404);
         }
-        $receiver->update($updateParams);
         return new ReceiverResource($receiver);
     }
 
-    public function destroy(Receiver $receiver)
+    public function update(UpdateReceiverRequest $request, $id)
     {
-        $receiver->delete();
+        $receiver = $this->receiverService->update($id, $request->all());
+        if (!$receiver) {
+            return response()->json(['message' => 'Receiver not found'], 404);
+        }
+        return new ReceiverResource($receiver);
+    }
+
+    public function destroy($id)
+    {
+        $deleted = $this->receiverService->delete($id);
+        if (!$deleted) {
+            return response()->json(['message' => 'Receiver not found'], 404);
+        }
         return response()->noContent();
     }
 
     public function destroyMany(Request $request)
     {
-        $params = $request->all();
-        Receiver::whereIn("id", $params["ids"])->delete();
-
+        $this->receiverService->deleteMany($request->input('ids'));
         return response()->noContent();
     }
 }

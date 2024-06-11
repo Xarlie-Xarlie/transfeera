@@ -107,9 +107,8 @@ class ReceiverTest extends TestCase
 
         $response = $this->getJson('/api/receiver?page=3');
 
-        $response->assertStatus(200)
-            ->assertJsonCount(0, 'data')
-            ->assertJsonFragment(["total" => 5]);
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
     }
 
     public function test_can_list_paginated()
@@ -128,6 +127,11 @@ class ReceiverTest extends TestCase
         $queryString = "queryName";
         Receiver::factory()->create(["name" => $queryString]);
 
+        $response = $this->getJson('/api/receiver?name=unkwon');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
+
         $response = $this->getJson('/api/receiver?name=' . $queryString);
 
         $response->assertStatus(200)
@@ -140,6 +144,11 @@ class ReceiverTest extends TestCase
     {
         $queryString = "validado";
         Receiver::factory()->create(["status" => $queryString]);
+
+        $response = $this->getJson('/api/receiver?status=unkwon');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
 
         $response = $this->getJson('/api/receiver?status=' . $queryString);
 
@@ -154,6 +163,11 @@ class ReceiverTest extends TestCase
         $queryString = "CPF";
         Receiver::factory()->create(["pix_key_type" => $queryString]);
 
+        $response = $this->getJson('/api/receiver?pix_key_type=unkwon');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
+
         $response = $this->getJson('/api/receiver?pix_key_type=' . $queryString);
 
         $response->assertStatus(200)
@@ -166,6 +180,11 @@ class ReceiverTest extends TestCase
     {
         $queryString = "111.111.111-11";
         Receiver::factory()->create(["pix_key_type" => "CPF", "pix_key" => $queryString]);
+
+        $response = $this->getJson('/api/receiver?pix_key=unkwon');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
 
         $response = $this->getJson('/api/receiver?pix_key=' . $queryString);
 
@@ -190,6 +209,11 @@ class ReceiverTest extends TestCase
         $queryName = "not_found";
         $queryStatus = "rascunho";
         Receiver::factory()->create(["name" => $queryName, "status" => $queryStatus]);
+
+        $response = $this->getJson('/api/receiver?name=unknown&status=unknown');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
 
         $response = $this->getJson('/api/receiver?name=' . $queryName . "&status=" . $queryStatus);
 
