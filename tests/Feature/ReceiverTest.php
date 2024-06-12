@@ -21,7 +21,7 @@ class ReceiverTest extends TestCase
             ["CHAVE_ALEATORIA", fake()->uuid],
         ]);
 
-        $response = $this->postJson('/api/receiver/', [
+        $response = $this->postJson('/api/receiver', [
             'name' => $this->faker->name,
             'cpf_cnpj' => fake()->unique()->randomElement([fake()->numerify('###.###.###-##'), fake()->numerify('##.###.###/####-##')]),
             'banco' => $this->faker->word,
@@ -52,7 +52,7 @@ class ReceiverTest extends TestCase
 
     public function test_cannot_create_receiver_with_invalid_args()
     {
-        $response = $this->postJson('/api/receiver/', [
+        $response = $this->postJson('/api/receiver', [
             'name' => "",
             'cpf_cnpj' => "111",
             'banco' => "",
@@ -84,21 +84,50 @@ class ReceiverTest extends TestCase
     {
         Receiver::factory(3)->create();
 
-        $response = $this->getJson('/api/receiver/');
+        $response = $this->getJson('/api/receiver');
 
         $response->assertStatus(200)
-            ->assertJsonCount(3, 'data');
+            ->assertJsonCount(3, 'data')
+            ->assertJsonFragment(["to" => 3, "total" => 3]);
     }
 
-    public function test_can_list_a_maximun_of_10_items()
+    public function test_can_list_a_default_of_10_items()
     {
         Receiver::factory(15)->create();
 
-        $response = $this->getJson('/api/receiver/');
+        $response = $this->getJson('/api/receiver');
 
         $response->assertStatus(200)
             ->assertJsonCount(10, 'data')
-            ->assertJsonFragment(["total" => 15]);
+            ->assertJsonFragment(["to" => 10, "total" => 15]);
+    }
+
+    public function test_cannot_list_more_than_50_items_in_one_request()
+    {
+        Receiver::factory(100)->create();
+
+        $response = $this->getJson('/api/receiver?per_page=100');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(50, 'data')
+            ->assertJsonFragment(["to" => 50, "total" => 100]);
+    }
+
+    public function test_can_list_more_than_50_items_in_separeted_requests()
+    {
+        Receiver::factory(100)->create();
+
+        $response = $this->getJson('/api/receiver?per_page=100');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(50, 'data')
+            ->assertJsonFragment(["to" => 50, "total" => 100]);
+
+        $response = $this->getJson('/api/receiver?per_page=100&page=2');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(50, 'data')
+            ->assertJsonFragment(["to" => 100, "total" => 100]);
     }
 
     public function test_can_list_a_page_that_has_no_items()

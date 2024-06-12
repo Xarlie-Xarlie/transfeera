@@ -49,6 +49,8 @@ class ReceiverRepository implements ReceiverRepositoryInterface
         $query = Receiver::query();
         $query = $this->buildFilters($filters, $query);
 
+        $perPage = $perPage >= 50 ? 50 : $perPage;
+
         return $query->paginate($perPage);
     }
 
