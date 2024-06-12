@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Receiver;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ReceiverRepository implements ReceiverRepositoryInterface
@@ -40,12 +41,18 @@ class ReceiverRepository implements ReceiverRepositoryInterface
     /**
      * Get all receivers with filters and pagination.
      *
+     * You cannot search by emtpy values.
+     *
      * @param array $filters Filters to apply to the query.
      * @param int $perPage Number of items per page.
-     * @return LengthAwarePaginator Paginated result of receivers.
+     * @return LengthAwarePaginator Paginated result of receivers or an empty Collection.
      */
-    public function all(array $filters, int $perPage): LengthAwarePaginator
+    public function all(array $filters, int $perPage): LengthAwarePaginator | Collection
     {
+        if (array_filter($filters, function ($filter) {
+            return $filter == "";
+        })) return collect();
+
         $query = Receiver::query();
         $query = $this->buildFilters($filters, $query);
 

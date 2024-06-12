@@ -166,6 +166,42 @@ class ReceiverTest extends TestCase
             ->assertJsonFragment(["name" => $queryString]);
     }
 
+    public function test_cannot_list_by_empty_name()
+    {
+        $queryString = "queryName";
+        Receiver::factory()->create(["name" => $queryString]);
+
+        $response = $this->getJson('/api/receiver?name=');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
+
+        $response = $this->getJson('/api/receiver?name=' . $queryString);
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(["total" => 1])
+            ->assertJsonFragment(["name" => $queryString]);
+    }
+
+    public function test_cannot_list_by_one_empty_param()
+    {
+        $queryString = "queryName";
+        Receiver::factory()->create(["name" => $queryString, "status" => "rascunho"]);
+
+        $response = $this->getJson('/api/receiver?name=' . $queryString . 'status=');
+
+        $response->assertStatus(404)
+            ->assertJsonFragment(['message' => "Receivers not found"]);
+
+        $response = $this->getJson('/api/receiver?name=' . $queryString . '&status=rascunho');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonFragment(["total" => 1])
+            ->assertJsonFragment(["name" => $queryString]);
+    }
+
     public function test_can_list_and_query_receivers_by_status()
     {
         $queryString = "validado";
