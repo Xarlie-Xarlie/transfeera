@@ -6,19 +6,16 @@ use App\Models\Receiver;
 
 class ReceiverRepository implements ReceiverRepositoryInterface
 {
-    protected function filterDefinitions()
-    {
-        return [
-            'status' => '=',
-            'name' => 'like',
-            'pix_key_type' => '=',
-            'pix_key' => 'like'
-        ];
-    }
+    protected $filterDefinitions = [
+        'status' => '=',
+        'name' => 'like',
+        'pix_key_type' => '=',
+        'pix_key' => 'like'
+    ];
 
     protected function buildFilters($filters, $query)
     {
-        $filterDefinitions = $this->filterDefinitions();
+        $filterDefinitions = $this->filterDefinitions;
 
         return array_reduce(array_keys($filters), function ($query, $field) use ($filters, $filterDefinitions) {
             if (isset($filters[$field])) {
