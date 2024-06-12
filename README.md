@@ -14,7 +14,10 @@ This application provides a simple user banking API.
 ### Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Xarlie-Xarlie/transfeera.git
+```
+
+```bash
 cd transfeera
 ```
 
@@ -27,7 +30,7 @@ composer install --ignore-platform-reqs
 ### Run your containers (this step may take some time to complete):
 
 ```bash
-./vendor/bin/sail up --build
+./vendor/bin/sail up -d
 ```
 
 ### Set up the database and run migrations:
