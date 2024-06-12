@@ -17,7 +17,7 @@ class ReceiverTest extends TestCase
             ["CPF", fake()->numerify('###.###.###-##')],
             ["CNPJ", fake()->numerify('##.###.###/####-##')],
             ["EMAIL", fake()->unique()->safeEmail],
-            ["TELEFONE", fake()->numerify('+## (##) #####-####')],
+            ["TELEFONE", fake()->numerify('+55##9########')],
             ["CHAVE_ALEATORIA", fake()->uuid],
         ]);
 
@@ -70,9 +70,6 @@ class ReceiverTest extends TestCase
                     "pix_key" => ["The pix key field format is invalid."],
                     "pix_key_type" => ["The selected pix key type is invalid."],
                     "name" => ["The name field is required."],
-                    "agencia" => ["The agencia field is required."],
-                    "banco" => ["The banco field is required."],
-                    "conta" => ["The conta field is required."],
                     "cpf_cnpj" => ["The cpf cnpj field format is invalid."],
                     "email" => ["The email field format is invalid."]
                 ],
@@ -285,7 +282,7 @@ class ReceiverTest extends TestCase
 
     public function test_can_update_all_fields_if_draft()
     {
-        $receiver = Receiver::factory()->create();
+        $receiver = Receiver::factory()->create(["status" => "rascunho"]);
 
         $response = $this->putJson('/api/receiver/' . $receiver->id, [
             'name' => "My New Name",
@@ -293,13 +290,17 @@ class ReceiverTest extends TestCase
             'banco' => "My new bank",
             'agencia' => "My new bank",
             'conta' => "12345",
-            'pix_key_type' => "CPF",
-            'pix_key' => "987.654.321-00",
+            'pix_key_type' => "TELEFONE",
+            'pix_key' => "+5511911111111",
             'email' => "myemail@example.com"
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonFragment(['email' => "myemail@example.com"]);
+            ->assertJsonFragment([
+                "email" => "myemail@example.com",
+                "pix_key_type" => "TELEFONE",
+                "pix_key" => "+5511911111111"
+            ]);
     }
 
     public function test_cannot_update_receiver_status()

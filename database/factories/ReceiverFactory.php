@@ -20,7 +20,7 @@ class ReceiverFactory extends Factory
             ["CPF", fake()->numerify('###.###.###-##')],
             ["CNPJ", fake()->numerify('##.###.###/####-##')],
             ["EMAIL", fake()->email],
-            ["TELEFONE", fake()->numerify('+## (##) #####-####')],
+            ["TELEFONE", fake()->numerify('+55##9########')],
             ["CHAVE_ALEATORIA", fake()->uuid],
         ]);
 
